@@ -1,5 +1,12 @@
 <template>
   <el-card>
+   <el-row>
+      <span style="margin-right:7px">关键字</span>
+        <el-input v-model="keyword" style="width:15%;margin-right:12px"></el-input>
+        <el-button @click="clear">清除</el-button>
+        <el-button type="primary" @click="search">搜索</el-button>
+      
+    </el-row>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column prop="date" label="序号" type="index"></el-table-column>
       <el-table-column prop="title" label="标题"></el-table-column>
@@ -80,6 +87,7 @@ import {
 export default {
   data() {
     return {
+      searchkey:'',
       form: {
         articleBody: "",
         id: null,
@@ -118,6 +126,16 @@ export default {
   },
    components: { quillEditor },
   methods: {
+    //搜索
+    search(){
+      this.page.currentpage=1
+    this.getarticle()
+    },
+    //清除搜索
+    clear(){
+      this.keyword=''
+      this.getarticle()
+    },
     //打开预览
     handleyl(index, row){
       this.dialogVisibleyl=true
