@@ -1,11 +1,17 @@
 <template>
   <el-card>
-   <el-row>
+    <div class="head" slot="header">
+      <div class>
+        面试技巧
+        <el-button @click="handleadd">新增技巧</el-button>
+      </div>
+    </div>
+
+    <el-row>
       <span style="margin-right:7px">关键字</span>
-        <el-input v-model="keyword" style="width:15%;margin-right:12px"></el-input>
-        <el-button @click="clear">清除</el-button>
-        <el-button type="primary" @click="search">搜索</el-button>
-      
+      <el-input v-model="keyword" style="width:15%;margin-right:12px"></el-input>
+      <el-button @click="clear">清除</el-button>
+      <el-button type="primary" @click="search">搜索</el-button>
     </el-row>
     <el-table :data="tableData" style="width: 100%">
       <el-table-column prop="date" label="序号" type="index"></el-table-column>
@@ -40,13 +46,11 @@
         <el-form-item label="标题" prop="title">
           <el-input v-model="form.title"></el-input>
         </el-form-item>
-        <el-form-item label="文章正文" prop="articleBody" >
+        <el-form-item label="文章正文" prop="articleBody">
           <!-- <el-input v-model="form.articleBody"></el-input> -->
-          <quillEditor v-model="form.articleBody" style="height:400px;margin-bottom:100px">
-
-          </quillEditor>
+          <quillEditor v-model="form.articleBody" style="height:400px;margin-bottom:100px"></quillEditor>
         </el-form-item>
-        <el-form-item label="视频地址" prop='videoURL'>
+        <el-form-item label="视频地址" prop="videoURL">
           <el-input v-model="form.videoURL"></el-input>
         </el-form-item>
       </el-form>
@@ -57,15 +61,16 @@
         </el-row>
       </span>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisibleyl" >
+    <el-dialog :visible.sync="dialogVisibleyl">
       <el-card style="height:500px;overflow:auto;margin:0;box-shadow: 0">
         <!-- <el-row>{{form}}</el-row> -->
-      <el-row><h4>{{form.title}}</h4></el-row>
-      <el-row>{{form.cname}}</el-row>
-      <hr>
-      <el-row v-html="form.articleBody"></el-row>
+        <el-row>
+          <h4>{{form.title}}</h4>
+        </el-row>
+        <el-row>{{form.cname}}</el-row>
+        <hr />
+        <el-row v-html="form.articleBody"></el-row>
       </el-card>
-      
     </el-dialog>
   </el-card>
 </template>
@@ -73,21 +78,23 @@
 <script>
 import { quillEditor } from "vue-quill-editor"; //调用编辑器
 // 引入样式，此时样式是直接从quill文件中直接引入
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
 
 import {
   list as articl_list,
   state as article_state,
   remove as article_remove,
   detail as article_detail,
-  update as article_update
+  update as article_update,
+  add as article_add
 } from "../../api/hmmm/articles";
 export default {
   data() {
     return {
-      searchkey:'',
+      isadd:false,
+      searchkey: "",
       form: {
         articleBody: "",
         id: null,
@@ -95,7 +102,7 @@ export default {
         videoURL: ""
       }, //编辑信息
       dialogVisible: false, //弹窗显示
-      dialogVisibleyl:false,//预览
+      dialogVisibleyl: false, //预览
       tableData: [],
       page: {
         currentpage: 1,
@@ -104,63 +111,78 @@ export default {
       },
       keyword: null,
       rules: {
-          title: [
-            { required: true, message: '请输入标题名称' },
-            
-          ],
-          articleBody: [
-            { validator(rule, val, callback){
+        title: [{ required: true, message: "请输入标题名称" }],
+        articleBody: [
+          {
+            validator(rule, val, callback) {
               console.log(1111111111111111111111111);
-              
-              if(val==''){
-                callback(new Error('内容不能为空'));
-              }else{
-                callback()
+
+              if (val == "") {
+                callback(new Error("内容不能为空"));
+              } else {
+                callback();
               }
-            } }
-          ],
-          videoURL: [
-            { required: true, message: '不许为空'}
-          ]}
+            }
+          }
+        ],
+        videoURL: [{ required: true, message: "不许为空" }]
+      }
     };
   },
-   components: { quillEditor },
+  components: { quillEditor },
   methods: {
+    //添加
+    handleadd(){
+      this.form={}
+      this.dialogVisible = !this.dialogVisible;
+      this.isadd=true
+     
+      // this.getarticle_xq(row.id);
+      // console.log(index, row);
+    },
     //搜索
-    search(){
-      this.page.currentpage=1
-    this.getarticle()
+    search() {
+      this.page.currentpage = 1;
+      this.getarticle();
     },
     //清除搜索
-    clear(){
-      this.keyword=''
-      this.getarticle()
+    clear() {
+      this.keyword = "";
+      this.getarticle();
     },
     //打开预览
-    handleyl(index, row){
-      this.dialogVisibleyl=true
-       this.getarticle_xq(row.id,row.creator)
+    handleyl(index, row) {
+      this.dialogVisibleyl = true;
+      this.getarticle_xq(row.id, row.creator);
       //  this.form.createname=row.creator
       // this.$set(this.form, 'createnameaa', row.creator)
-       console.log(this.form);
+      console.log(this.form);
     },
     //修改
-    edit(){
-      article_update(this.form).then(res=>{
+    edit() {
+      if(!this.isadd){
+         article_update(this.form).then(res => {
         // console.log(res);
         this.getarticle();
-        this.dialogVisible = false
-      })
-      
-      
+        this.dialogVisible = false;
+      });
+      }else{
+        article_add(this.form).then(res => {
+        // console.log(res);
+        this.getarticle();
+        this.dialogVisible = false;
+        this.isadd=false
+      });
+      }
+     
     },
     //获取文章详情
-    getarticle_xq(id,name=null) {
+    getarticle_xq(id, name = null) {
       let data = { id };
       article_detail(data).then(res => {
         console.log(res.data);
         this.form = res.data;
-        this.$set(this.form,'cname',name)
+        this.$set(this.form, "cname", name);
       });
     },
     //切换页码
@@ -241,8 +263,8 @@ export default {
 };
 </script>
 
-<style>
-span{
-  
+<style lang='scss' scoped>
+.head {
+  padding: 0;
 }
 </style>
