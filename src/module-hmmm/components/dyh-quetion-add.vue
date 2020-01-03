@@ -141,11 +141,12 @@ import { simple as dir_simple } from "../../api/hmmm/directorys";
 import { list as com_list } from "../../api/hmmm/companys";
 import { provinces, citys } from "../../api/hmmm/citys";
 import { direction, questionType, difficulty } from "../../api/hmmm/constants";
-import { add as que_add } from "../../api/hmmm/questions";
+import { add as que_add, detail as que_detail } from "../../api/hmmm/questions";
 export default {
   data() {
     return {
       radio: "1",
+      first: true,
       form: {
         subjectID: null, //学科
         catalogID: null, //目录
@@ -205,10 +206,13 @@ export default {
   watch: {
     "form.questionType": function() {
       console.log(this.form.questionType);
-
-      this.list.xxlist.forEach(item => {
-        item.isRight = false;
-      });
+      if (!this.first || this.$route.query.id) {
+        this.list.xxlist.forEach(item => {
+          item.isRight = false;
+          console.log("执行");
+        });
+        this.first = false;
+      }
     }
   },
   methods: {
@@ -290,7 +294,8 @@ export default {
               break;
           }
           let resp = await que_add(this.form);
-          console.log(resp);
+          this.$router.push("/questions/list");
+          console.log(111, resp);
         }
       });
     },
@@ -312,6 +317,38 @@ export default {
     this.getSome(com_list, "companys", "items");
     //获取城市
     // console.log(provinces());
+    //参数
+    if (this.$route.query.id) {
+      que_detail({ id: this.$route.query.id }).then(res => {
+        console.log(res.data);
+
+        this.form = res.data;
+        this.list.xxlist = res.data.options;
+        if (res.data.questionType == "1") {
+          let nl = res.data.options.filter(ite => {
+            if (ite.isRight == 1) {
+              return ite;
+            }
+          });
+          console.log(nl, 111111111);
+
+          this.list.radio = nl[0];
+        } else if (res.data.questionType == "2") {
+          let nl = res.data.options.filter(ite => {
+            if (ite.isRight == 1) {
+              return ite;
+            }
+          });
+          this.list.checkList = nl;
+        }
+
+        console.log(res.data);
+      });
+    } else {
+      this.first = false;
+    }
+
+    // console.log('路由',this.$route.query);
   },
   components: { quillEditor }
 };
