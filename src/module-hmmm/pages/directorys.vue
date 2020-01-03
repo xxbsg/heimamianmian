@@ -50,7 +50,7 @@
         </el-table>
         <el-row style="height:60px" type="flex" justify="center" align="middle">
           <el-pagination
-            layout="total, prev, pager, next, jumper, sizes"
+            layout="total, prev, pager, next"
             :total="page.total"
             :current-page="page.currentPage"
             :page-size="page.pageSize"
@@ -136,7 +136,7 @@ export default {
         ...data
       });
       this.list = res.data.items;
-      this.page.total = res.data.count;
+      this.page.total = res.data.counts;
       console.log(res.data);
     },
     clear() {
@@ -196,7 +196,7 @@ export default {
     changePage(newPage) {
       //页码
       this.page.currentPage = newPage;
-      this.getDiretorys(this.search);
+      this.getDiretorys();
     }
   },
   created() {
